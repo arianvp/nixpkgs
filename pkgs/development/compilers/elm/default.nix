@@ -65,6 +65,14 @@ let
               '' + (makeDotElm "0.19.0" (import ./packages/elm-elm.nix));
             };
 
+            /* This override is ndeed because otherwise elm-format won't build */
+            indents = hlib.overrideCabal super.indents (drv: {
+              #test dep tasty has a version mismatch
+              doCheck = false;
+              sha256 = "16lz21bp9j14xilnq8yym22p3saxvc9fsgfcf5awn2a6i6n527xn";
+              libraryHaskellDepends = drv.libraryHaskellDepends ++ [super.concatenative];
+            });
+
             /*
             This is not a core Elm package, and it's hosted on GitHub.
             To update, run:
