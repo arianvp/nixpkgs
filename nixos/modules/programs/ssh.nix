@@ -84,6 +84,23 @@ in
         '';
       };
 
+      pkcs11Provider = mkOption {
+        type = types.nullOr types.path;
+        default = null;
+        example = "${pkgs.opensc}/lib/pkcs11/opensc-pkcs11.so";
+        description = ''
+          Specifies the pkcs11 shared library that will provide pkcs11 support by adding the
+          PKCS11Provider option to ssh-config.
+          See <citerefentry><refentrytitle>ssh_config</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+          for more information.
+
+          If startAgent is enabled, sets the PKCS11 whitelist of ssh-agent to this path.
+          See <citerefentry><refentrytitle>ssh-agent</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+          for more information.
+
+        '';
+      };
+
       extraConfig = mkOption {
         type = types.lines;
         default = "";
@@ -204,7 +221,7 @@ in
     environment.etc."ssh/ssh_config".text =
       ''
         AddressFamily ${if config.networking.enableIPv6 then "any" else "inet"}
-
+        ${optionalString (cfg.pkcs11Provider != null) "PKCS11Provider ${cfg.pkcs11Provider}"}
         ${optionalString cfg.setXAuthLocation ''
           XAuthLocation ${pkgs.xorg.xauth}/bin/xauth
         ''}
@@ -228,6 +245,7 @@ in
             ExecStart =
                 "${cfg.package}/bin/ssh-agent " +
                 optionalString (cfg.agentTimeout != null) ("-t ${cfg.agentTimeout} ") +
+                optionalString (cfg.pkcs11Provider != null) ("-P ${cfg.pkcs11Provider} ") +
                 "-a %t/ssh-agent";
             StandardOutput = "null";
             Type = "forking";
