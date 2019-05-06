@@ -15,16 +15,16 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "241.20190221";
+  version = "242";
   name = "systemd-${version}";
 
   # When updating, use https://github.com/systemd/systemd-stable tree, not the development one!
   # Also fresh patches should be cherry-picked from that tree to our current one.
   src = fetchFromGitHub {
-    owner = "NixOS";
+    owner = "andir";
     repo = "systemd";
-    rev = "nixos-v${version}";
-    sha256 = "0grcf0x793k1jx4bx7p63h3f3cd8w262824mzf8iwdsy6y9wzylr";
+    rev = "7283141b1bab932e24e2754c261a7e20f4fc3bfa";
+    sha256 = "04pn42q9snwszdy1xbxngvnj6jpwplsx4xhx8p9q2xb9kg891b9v";
   };
 
   outputs = [ "out" "lib" "man" "dev" ];
@@ -104,7 +104,7 @@ stdenv.mkDerivation rec {
     export LC_ALL="en_US.UTF-8";
     # FIXME: patch this in systemd properly (and send upstream).
     # already fixed in f00929ad622c978f8ad83590a15a765b4beecac9: (u)mount
-    for i in src/remount-fs/remount-fs.c src/core/mount.c src/core/swap.c src/fsck/fsck.c units/emergency.service.in units/rescue.service.in src/journal/cat.c src/core/shutdown.c src/nspawn/nspawn.c src/shared/generator.c; do
+    for i in src/remount-fs/remount-fs.c src/core/mount.c src/core/swap.c src/fsck/fsck.c units/emergency.service.in units/rescue.service.in src/journal/cat.c src/shutdown/shutdown.c src/nspawn/nspawn.c src/shared/generator.c; do
       test -e $i
       substituteInPlace $i \
         --replace /usr/bin/getent ${getent}/bin/getent \
