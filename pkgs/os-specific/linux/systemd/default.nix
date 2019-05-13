@@ -1,5 +1,5 @@
 { stdenv, lib, fetchFromGitHub, fetchpatch, fetchurl, pkgconfig, intltool, gperf, libcap, kmod
-, xz, pam, acl, cryptsetup, libuuid, m4, utillinux, libffi
+, xz, pam, acl, libuuid, m4, utillinux, libffi
 , glib, kbd, libxslt, coreutils, libgcrypt, libgpgerror, libidn2, libapparmor
 , audit, lz4, bzip2, libmicrohttpd, pcre2
 , linuxHeaders ? stdenv.cc.libc.linuxHeaders
@@ -8,6 +8,7 @@
 , ninja, meson, python3Packages, glibcLocales
 , patchelf
 , getent
+, cryptsetup
 , buildPackages
 , withSelinux ? false, libselinux
 , withLibseccomp ? lib.any (lib.meta.platformMatch stdenv.hostPlatform) libseccomp.meta.platforms, libseccomp

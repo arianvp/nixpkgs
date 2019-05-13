@@ -38,7 +38,7 @@ stdenv.mkDerivation rec {
   ] ++ stdenv.lib.optional enablePython "--enable-python";
 
   nativeBuildInputs = [ pkgconfig ];
-  buildInputs = [ lvm2 json_c openssl libuuid popt ]
+  buildInputs = [ (lvm2.override { udev = null; }) json_c openssl libuuid popt ]
     ++ stdenv.lib.optional enablePython python2;
 
   doCheck = true;

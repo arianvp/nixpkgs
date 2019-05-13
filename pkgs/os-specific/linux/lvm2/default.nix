@@ -17,8 +17,6 @@ stdenv.mkDerivation {
 
   configureFlags = [
     "--disable-readline"
-    "--enable-udev_rules"
-    "--enable-udev_sync"
     "--enable-pkgconfig"
     "--enable-applib"
     "--enable-cmdlib"
@@ -26,6 +24,10 @@ stdenv.mkDerivation {
   ++ stdenv.lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     "ac_cv_func_malloc_0_nonnull=yes"
     "ac_cv_func_realloc_0_nonnull=yes"
+  ] ++
+  stdenv.lib.optionals (udev != null) [
+    "--enable-udev_rules"
+    "--enable-udev_sync"
   ];
 
   nativeBuildInputs = [ pkgconfig ];
@@ -70,10 +72,14 @@ stdenv.mkDerivation {
   # Install systemd stuff.
   #installTargets = "install install_systemd_generators install_systemd_units install_tmpfiles_configuration";
 
-  postInstall =
+  postInstall = 
+    '' 
+    ${if udev != null then
     ''
-      substituteInPlace $out/lib/udev/rules.d/13-dm-disk.rules \
-        --replace $out/sbin/blkid ${utillinux}/sbin/blkid
+    substituteInPlace $out/lib/udev/rules.d/13-dm-disk.rules \
+        --replace $out/sbin/blkid /run/current-system/sw/sbin/blkid
+    ''
+    else ""}
 
       # Systemd stuff
       mkdir -p $out/etc/systemd/system $out/lib/systemd/system-generators
