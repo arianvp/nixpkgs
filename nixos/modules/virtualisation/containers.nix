@@ -129,6 +129,7 @@ let
       # Run systemd-nspawn without startup notification (we'll
       # wait for the container systemd to signal readiness).
       exec ${config.systemd.package}/bin/systemd-nspawn \
+        --keep-unit \
         -M "$INSTANCE" -D "$root" $extraFlags \
         $EXTRA_NSPAWN_FLAGS \
         --notify-ready=yes \
