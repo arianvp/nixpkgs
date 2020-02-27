@@ -128,8 +128,25 @@ let
 
       # Run systemd-nspawn without startup notification (we'll
       # wait for the container systemd to signal readiness).
+
+      # When --boot is used (which is used in systemd-nspawn@.service) ,
+      # systemd-nspawn defaults to --kill-signal=SIGTRMIN+3 which triggers an
+      # orderly shutdown when systemd-nspawn itself receives SIGTERM. However
+      # we can not use --boot as we pass along where the init binary is as a
+      # parameter.  Hence we will have to manually set the --kill-signal such
+      # that the container is cleanly shut down when the service file is
+      # stopped.
+      # I quote from systemd-nspawn(1): 
+      #   Defaults to SIGRTMIN+3 if --boot is used (on systemd-compatible init
+      #   systems SIGRTMIN+3 triggers an orderly shutdown).  If --boot is not
+      #   used and this option is not specified the container's processes are
+      #   terminated abruptly via SIGKILL
+      #  
+      # This is obviously bad, as that will cause the machine to die abruptly
+      # and not nicely deregister with systemd-machined and such.
       exec ${config.systemd.package}/bin/systemd-nspawn \
         --keep-unit \
+        --kill-signal=SIGTRMIN+3 \
         -M "$INSTANCE" -D "$root" $extraFlags \
         $EXTRA_NSPAWN_FLAGS \
         --notify-ready=yes \
@@ -237,15 +254,9 @@ let
 
     EnvironmentFile = "-/etc/containers/%i.conf";
 
-    Type = "notify";
 
     RuntimeDirectory = lib.optional cfg.ephemeral "containers/%i";
 
-    # Note that on reboot, systemd-nspawn returns 133, so this
-    # unit will be restarted. On poweroff, it returns 0, so the
-    # unit won't be restarted.
-    RestartForceExitStatus = "133";
-    SuccessExitStatus = "133";
 
     # Some containers take long to start
     # especially when you automatically start many at once
@@ -253,16 +264,17 @@ let
 
     Restart = "on-failure";
 
+    # These are kept in sync with upstream systemd-nspawn@.service as much as possible
+
+    KillMode = "mixed";
+    Type = "notify";
+    # Note that on reboot, systemd-nspawn returns 133, so this
+    # unit will be restarted. On poweroff, it returns 0, so the
+    # unit won't be restarted.
+    RestartForceExitStatus = "133";
+    SuccessExitStatus = "133";
     Slice = "machine.slice";
     Delegate = true;
-
-    # Hack: we don't want to kill systemd-nspawn, since we call
-    # "machinectl poweroff" in preStop to shut down the
-    # container cleanly. But systemd requires sending a signal
-    # (at least if we want remaining processes to be killed
-    # after the timeout). So send an ignored signal.
-    KillMode = "mixed";
-    KillSignal = "WINCH";
 
     DevicePolicy = "closed";
     DeviceAllow = map (d: "${d.node} ${d.modifier}") cfg.allowedDevices;
@@ -705,8 +717,6 @@ in
       script = startScript dummyConfig;
 
       postStart = postStartScript dummyConfig;
-
-      preStop = "machinectl poweroff $INSTANCE";
 
       stopIfChanged = false;
       restartIfChanged = false;
