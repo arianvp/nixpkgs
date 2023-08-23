@@ -28816,6 +28816,7 @@ with pkgs;
     withFido2 = true;
     withKmod = true;
     withTpm2Tss = true;
+    withEfi = true;
   };
   systemdStage1Network = systemdStage1.override {
     pname = "systemd-stage-1-network";
