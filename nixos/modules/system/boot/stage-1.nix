@@ -674,9 +674,6 @@ in
 
   config = mkIf config.boot.initrd.enable {
     assertions = [
-      { assertion = any (fs: fs.mountPoint == "/") fileSystems;
-        message = "The ‘fileSystems’ option does not specify your root file system.";
-      }
       { assertion = let inherit (config.boot) resumeDevice; in
           resumeDevice == "" || builtins.substring 0 1 resumeDevice == "/";
         message = "boot.resumeDevice has to be an absolute path."
