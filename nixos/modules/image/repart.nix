@@ -14,13 +14,19 @@ let
         description = lib.mdDoc "The store paths to include in the partition.";
       };
 
-      stripNixStorePrefix = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
+      targetPrefix = lib.mkOption {
+        type = lib.types.str;
+        default = "/nix/store";
         description = lib.mdDoc ''
-          Whether to strip `/nix/store/` from the store paths. This is useful
-          when you want to build a partition that only contains store paths and
-          is mounted under `/nix/store`.
+          What directory to copy the nix store files in. This is useful when
+          you want to build a partition that only contains store paths and is
+          mounted under `/nix/store`. You ten would set `targetPrefix = "/"`.
+
+          Another usecase is setting `targetPrefix = "/store"` and making
+          the partition of `Type = "usr"` and bind mount `/usr/store` to
+          `/nix/store`. This way you can reuse systemd's mechanism
+          for verity checking of the `/usr` partition for creating verity-checked
+          nix store partitions.
         '';
       };
 

@@ -36,11 +36,19 @@ def add_contents_to_definition(
 
 
 def add_closure_to_definition(
-    definition: Path, closure: Path | None, strip_nix_store_prefix: bool | None
+    definition: Path, closure: Path | None, target_prefix: str = "/nix/store"
 ) -> None:
     """Add CopyFiles= instructions to a definition for all paths in the closure.
 
-    If strip_nix_store_prefix is True, `/nix/store` is stripped from the target path.
+    target_prefix tells what directory to move the nix store paths into.
+    By default it copies to "/nix/store"
+
+    Setting target_prefix to "/" creates a nix-store partition
+    that you can mount under "/nix/store"
+
+    Other option is to set target_prefix to "/store" on a usr partition
+    and then bind-mount "/usr/store" to "/nix/store".  This allows
+    you to re-use all of systemd's verity logic for usr partitions
     """
     if not closure:
         return
@@ -52,10 +60,9 @@ def add_closure_to_definition(
                 continue
 
             source = Path(line.strip())
-            target = str(source.relative_to("/nix/store/"))
-            target = f":/{target}" if strip_nix_store_prefix else ""
-
-            copy_files_lines.append(f"CopyFiles={source}{target}\n")
+            source_prefix = "/nix/store"
+            target = Path(target_prefix).joinpath(source.relative_to(source_prefix))
+            copy_files_lines.append(f"CopyFiles={source}:{target}\n")
 
     with open(definition, "a") as f:
         f.writelines(copy_files_lines)
@@ -102,8 +109,8 @@ def main() -> None:
         add_contents_to_definition(definition, contents)
 
         closure = config.get("closure")
-        strip_nix_store_prefix = config.get("stripNixStorePrefix")
-        add_closure_to_definition(definition, closure, strip_nix_store_prefix)
+        target_prefix = config.get("targetPrefix")
+        add_closure_to_definition(definition, closure, target_prefix)
 
     print(target_dir.absolute())
 
