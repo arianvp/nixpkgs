@@ -67,6 +67,7 @@
 , p11-kit
 , libpwquality
 , qrencode
+, libarchive
 
   # the (optional) BPF feature requires bpftool, libbpf, clang and llvm-strip to
   # be available during build time.
@@ -153,6 +154,7 @@
   # building disk images for non-NixOS systems. To save users from trying to use it
   # on their live NixOS system, we disable it by default.
 , withKernelInstall ? false
+, withLibarchive ? true
   # tests assume too much system access for them to be feasible for us right now
 , withTests ? false
   # build only libudev and libsystemd
@@ -179,7 +181,7 @@ assert withBootloader -> withEfi;
 let
   wantCurl = withRemote || withImportd;
   wantGcrypt = withResolved || withImportd;
-  version = "255.6";
+  version = "256";
 
   # Use the command below to update `releaseTimestamp` on every (major) version
   # change. More details in the commentary at mesonFlags.
@@ -195,9 +197,9 @@ stdenv.mkDerivation (finalAttrs: {
   # This has proven to be less error-prone than the previous systemd fork.
   src = fetchFromGitHub {
     owner = "systemd";
-    repo = "systemd-stable";
+    repo = "systemd";
     rev = "v${version}";
-    hash = "sha256-ah0678iNfy0c5NhHhjn0roY6RoM8OE0hWyEt+qEGKRQ=";
+    hash = "sha256-myLIVnuOM9v1lQ07O9OZkSYiWxb59Rp2iF4vlPdbjeU=";
   };
 
   # On major changes, or when otherwise required, you *must* :
@@ -355,7 +357,15 @@ stdenv.mkDerivation (finalAttrs: {
           # Support for PKCS#11 in systemd-cryptsetup, systemd-cryptenroll and systemd-homed
           { name = "libp11-kit.so.0"; pkg = opt (withHomed || withCryptsetup) p11-kit; }
 
+          # Compression
+          { name = "liblz4.so.1"; pkg = opt withCompression lz4; }
+          { name = "liblzma.so.5"; pkg = opt withCompression xz; }
+          { name = "libzstd.so.1"; pkg = opt withCompression zstd; }
+
           { name = "libip4tc.so.2"; pkg = opt withIptables iptables; }
+          { name = "libarchive.so.13"; pkg = opt withLibarchive libarchive; }
+          { name = "libkmod.so.2"; pkg = opt withKmod kmod; }
+          { name = "libgcrypt.so.20"; pkg = opt wantGcrypt libgcrypt; }
         ];
 
       patchDlOpen = dl:
@@ -476,6 +486,7 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional withUkify (python3Packages.python.withPackages (ps: with ps; [ pefile ]))
     ++ lib.optionals withPasswordQuality [ libpwquality ]
     ++ lib.optionals withQrencode [ qrencode ]
+    ++ lib.optionals withLibarchive [ libarchive ]
   ;
 
   mesonBuildType = "release";
@@ -497,8 +508,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "tty-gid" "3") # tty in NixOS has gid 3
     (lib.mesonOption "debug-shell" "${bashInteractive}/bin/bash")
     (lib.mesonOption "pamconfdir" "${placeholder "out"}/etc/pam.d")
-    # Use cgroupsv2. This is already the upstream default, but better be explicit.
-    (lib.mesonOption "default-hierarchy" "unified")
     (lib.mesonOption "kmod-path" "${kmod}/bin/kmod")
 
     # Attempts to check /usr/sbin and that fails in macOS sandbox because
@@ -542,6 +551,11 @@ stdenv.mkDerivation (finalAttrs: {
     # Mount
     (lib.mesonOption "mount-path" "${lib.getOutput "mount" util-linux}/bin/mount")
     (lib.mesonOption "umount-path" "${lib.getOutput "mount" util-linux}/bin/umount")
+
+    # SSH
+    # Disabled for now until someone makes this work.
+    (lib.mesonOption "sshconfdir" "no")
+    (lib.mesonOption "sshdconfdir" "no")
 
 
     # Features
@@ -606,6 +620,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "kmod" withKmod)
     (lib.mesonEnable "qrencode" withQrencode)
     (lib.mesonEnable "vmspawn" withVmspawn)
+    (lib.mesonEnable "libarchive" withLibarchive)
     (lib.mesonEnable "xenctrl" false)
     (lib.mesonEnable "gnutls" false)
     (lib.mesonEnable "xkbcommon" false)
