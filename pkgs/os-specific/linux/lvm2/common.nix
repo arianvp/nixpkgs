@@ -14,9 +14,6 @@
   udevSupport ? !stdenv.hostPlatform.isStatic,
   udev,
   onlyLib ? stdenv.hostPlatform.isStatic,
-  # Otherwise we have a infinity recursion during static compilation
-  enableUtilLinux ? !stdenv.hostPlatform.isStatic,
-  util-linux,
   enableVDO ? false,
   vdo,
   enableMdadm ? false,
@@ -121,7 +118,7 @@ stdenv.mkDerivation rec {
       in
       {
         inherit coreutils;
-        util_linux = optionalTool enableUtilLinux util-linux;
+        util_linux = "/run/current-system/sw";
         mdadm = optionalTool enableMdadm mdadm;
         multipath_tools = optionalTool enableMultipath multipath-tools;
         vdo = optionalTool enableVDO vdo;
