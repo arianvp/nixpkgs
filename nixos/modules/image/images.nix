@@ -9,6 +9,7 @@ let
   inherit (lib) types;
 
   imageModules = {
+    repart = ./repart.nix;
     amazon = ../../maintainers/scripts/ec2/amazon-image.nix;
     azure = ../virtualisation/azure-image.nix;
     cloudstack = ../../maintainers/scripts/cloudstack/cloudstack-image.nix;
