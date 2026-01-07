@@ -10,13 +10,8 @@
     willibutz
   ];
 
-  nodes.machine =
-    {
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
+  defaults =
+    { config, lib, ... }:
     let
       inherit (config.image.repart.verityStore) partitionIds;
     in
@@ -74,16 +69,20 @@
         initrd.systemd.enable = true;
       };
 
-      system.image = {
-        id = "nixos-appliance";
-        version = "1";
-      };
+      system.image.id = "nixos-appliance";
 
       # don't create /usr/bin/env
       # this would require some extra work on read-only /usr
       # and it is not a strict necessity
       system.activationScripts.usrbinenv = lib.mkForce "";
     };
+
+  nodes.machine = {
+    system.image.version = "1";
+  };
+
+  # Test that building without a version number works
+  nodes.without-version = { };
 
   testScript =
     { nodes, ... }: # python
