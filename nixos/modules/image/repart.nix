@@ -378,7 +378,7 @@ in
             );
 
             mkfsEnv = mkfsOptionsToEnv cfg.mkfsOptions;
-            val = pkgs.callPackage ./repart-image.nix {
+            val = pkgs.callPackage ./build-repart-image.nix {
               systemd = cfg.package;
               inherit (config.image) baseName;
               inherit (cfg)
