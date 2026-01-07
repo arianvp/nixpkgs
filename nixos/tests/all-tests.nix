@@ -231,6 +231,7 @@ in
   artalk = runTest ./artalk.nix;
   atd = runTest ./atd.nix;
   atop = import ./atop.nix { inherit pkgs runTest; };
+  attestable-ami = runTest ./attestable-ami.nix;
   atticd = runTest ./atticd.nix;
   attr = pkgs.callPackage ./attr.nix { };
   atuin = runTest ./atuin.nix;
