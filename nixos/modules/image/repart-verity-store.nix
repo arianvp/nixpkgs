@@ -78,6 +78,7 @@ in
         '';
       };
     };
+
   };
 
   config = lib.mkIf cfg.enable {
@@ -96,6 +97,7 @@ in
         Verity = "hash";
         VerityMatchKey = lib.mkDefault verityMatchKey;
         Label = lib.mkDefault "store-verity";
+        Minimize = lib.mkDefault "best";
       };
       # dm-verity data partition that contains the nix store
       ${cfg.partitionIds.store} = {
@@ -106,6 +108,7 @@ in
           Format = lib.mkDefault "erofs";
           VerityMatchKey = lib.mkDefault verityMatchKey;
           Label = lib.mkDefault "store";
+          Minimize = lib.mkDefault "best";
         };
       };
 
