@@ -79,6 +79,21 @@ in
                       }
                     );
                   };
+                  options.tpm = lib.mkOption {
+                    default = null;
+                    description = "TPM 2.0 node attestation plugin.";
+                    type = lib.types.nullOr (
+                      lib.types.submodule {
+                        freeformType = format.type;
+                        options.plugin_cmd = lib.mkOption {
+                          type = lib.types.str;
+                          default = lib.getExe' pkgs.spire-tpm-plugin "tpm_attestor_server";
+                          defaultText = lib.literalExpression ''lib.getExe' pkgs.spire-tpm-plugin "tpm_attestor_server"'';
+                          description = "Path to the TPM attestor server plugin binary.";
+                        };
+                      }
+                    );
+                  };
                 };
               };
             };

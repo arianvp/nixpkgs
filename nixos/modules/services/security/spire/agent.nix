@@ -105,6 +105,8 @@ in
     };
 
   };
+  imports = [ ./agent-tpm.nix ];
+
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
 
@@ -117,6 +119,8 @@ in
 
     systemd.services.spire-agent = {
       wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
       description = "SPIRE agent";
       serviceConfig = {
         ExecStart =
