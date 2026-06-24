@@ -1655,6 +1655,7 @@ in
   systemd-cryptenroll = runTest ./systemd-cryptenroll.nix;
   systemd-escaping = runTest ./systemd-escaping.nix;
   systemd-homed = runTest ./systemd-homed.nix;
+  systemd-imdsd = runTest ./systemd-imdsd.nix;
   systemd-initrd-bridge = runTest ./systemd-initrd-bridge.nix;
   systemd-initrd-btrfs-raid = runTest ./systemd-initrd-btrfs-raid.nix;
   systemd-initrd-credentials = runTest ./systemd-initrd-credentials.nix;
