@@ -603,6 +603,21 @@ in
   easytier-modular = runTest ./easytier-modular.nix;
   ec2-config = (handleTestOn [ "x86_64-linux" ] ./ec2.nix { }).boot-ec2-config or { };
   ec2-image = runTest ./ec2-image.nix;
+  ec2-image-switch-limine-bios = runTestOn [ "x86_64-linux" ] {
+    imports = [ ./ec2-image-switch.nix ];
+    _module.args.bootMode = "uefi-preferred";
+    _module.args.firmware = "bios";
+  };
+  ec2-image-switch-limine-uefi = runTestOn [ "x86_64-linux" ] {
+    imports = [ ./ec2-image-switch.nix ];
+    _module.args.bootMode = "uefi-preferred";
+    _module.args.firmware = "uefi";
+  };
+  ec2-image-switch-systemd-boot = runTest {
+    imports = [ ./ec2-image-switch.nix ];
+    _module.args.bootMode = "uefi";
+    _module.args.firmware = "uefi";
+  };
   ec2-image-systemd-boot = runTest {
     imports = [ ./ec2-image.nix ];
     _module.args.bootMode = "uefi";
