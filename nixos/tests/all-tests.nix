@@ -607,6 +607,7 @@ in
     imports = [ ./ec2-image.nix ];
     _module.args.bootMode = "uefi";
   };
+  ec2-legacy-upgrade = runTestOn [ "x86_64-linux" ] ./ec2-legacy-upgrade.nix;
   ec2-nixops = (handleTestOn [ "x86_64-linux" ] ./ec2.nix { }).boot-ec2-nixops or { };
   echoip = runTest ./echoip.nix;
   ejabberd = runTest ./xmpp/ejabberd.nix;
